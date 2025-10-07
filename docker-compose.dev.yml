@@ -1,0 +1,5 @@
+services:
+    captcha-resolver:
+        image: registry.gitlab.com/nhayhoc/bank-captcha-server
+        ports:
+            - '1234:1234'
