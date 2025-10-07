@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PaymentsModule } from './payments/payments.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
     imports: [
@@ -10,6 +10,4 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         PaymentsModule,
     ],
 })
-export class AppModule {
-    constructor(private readonly configService: ConfigService) {}
-}
+export class AppModule {}
