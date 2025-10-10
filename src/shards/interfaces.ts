@@ -43,3 +43,13 @@ export interface MbBankTransactionDto {
         transactionType: string;
     }[];
 }
+
+export interface Webhook {
+    name: string;
+    url: string;
+    token: string;
+    conditions: {
+        content_regex: string;
+        account_regex: string;
+    };
+}

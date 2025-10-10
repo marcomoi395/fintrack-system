@@ -19,7 +19,9 @@ export class PaymentsService implements OnApplicationBootstrap {
     }
 
     async onApplicationBootstrap() {
-        if (this.configService.get('DISABLE_SYNC_REDIS') == 'true') return;
+        if (this.configService.get('DISABLE_SYNC_REDIS') == 'true') {
+            return;
+        }
 
         const payments = await this.redis.get('payments');
         if (payments) {
@@ -59,10 +61,12 @@ export class PaymentsService implements OnApplicationBootstrap {
             date: this.replaceDateTodayAndNoTime(payment.date),
         }));
 
-        if (replaceDateTimeNewPayments.length == 0) return;
+        if (replaceDateTimeNewPayments.length == 0) {
+            return;
+        }
 
         // Send webhook
-        // this.eventEmitter.emit(PAYMENT_CREATED, replaceDateTimeNewPayments);
+        this.eventEmitter.emit(PAYMENT_CREATED, replaceDateTimeNewPayments);
 
         this.payments.push(...replaceDateTimeNewPayments);
 
@@ -70,11 +74,6 @@ export class PaymentsService implements OnApplicationBootstrap {
         //     .slice(-500) // Keep last 500 payments
         //     .sort((a, b) => b.date.getTime() - a.date.getTime());
         // await this.saveRedis();
-    }
-
-    sendPayments() {
-        const payment: Payment[] = this.getPayments();
-        this.eventEmitter.emit(PAYMENT_CREATED, payment);
     }
 
     getPayments(): Payment[] {

@@ -27,7 +27,7 @@ class MBBankService extends GatewayService {
 
     private async login() {
         const browser = await playwright.chromium.launch({
-            headless: false,
+            headless: true,
         });
 
         try {
@@ -41,8 +41,6 @@ class MBBankService extends GatewayService {
                 colorScheme: 'light',
             });
             const page = await context.newPage();
-
-            console.log('Mb bank login...');
 
             // Tiết kiệm băng thông
             await page.route('**/*', async (route) => {
@@ -119,7 +117,6 @@ class MBBankService extends GatewayService {
             this.sessionId = loginJson.sessionId;
             this.deviceId = loginJson.cust.deviceId;
             await browser.close();
-            console.log('MBBankService login success');
         } catch (error) {
             await browser.close();
             if (error instanceof Error) {
