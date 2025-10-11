@@ -48,8 +48,16 @@ export interface Webhook {
     name: string;
     url: string;
     token: string;
-    conditions: {
-        content_regex: string;
-        account_regex: string;
+    conditions?: {
+        content_regex?: string;
+        account_regex?: string;
     };
+}
+
+export interface WebhookEnvelope<T> {
+    event: string;
+    version: number;
+    source: string;
+    occurred_at: string;
+    data: T;
 }

@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { axios } from 'src/shards/helpers/axios';
-import { Payment, Webhook } from '../shards/interfaces';
+import { Payment, Webhook, WebhookEnvelope } from '../shards/interfaces';
 import { Job, Queue, Worker, ConnectionOptions } from 'bullmq';
 import { ConfigService } from '@nestjs/config';
 import { webhookConfig } from '../shards/utils/webhook-config.util';
 
-type JobData = { payment: Payment };
+type JobData = { envelope: WebhookEnvelope<Payment> };
 
 @Injectable()
 export class WebhookService {
@@ -44,14 +44,13 @@ export class WebhookService {
             'webhook',
             async (job: Job<JobData>) => {
                 const { url, token } = this.webhook;
-                const { payment } = job.data;
+                const { envelope } = job.data;
 
-                const data = {
-                    token,
-                    payment,
-                };
-
-                await axios.post(url, data);
+                await axios.post(url, envelope, {
+                    headers: {
+                        'X-Log-Token': token,
+                    },
+                });
             },
             { connection: this.connection, concurrency: 5 },
         );
@@ -72,9 +71,17 @@ export class WebhookService {
 
     sendPayments(payments: Payment[]) {
         payments.forEach((payment) => {
+            const envelope: WebhookEnvelope<Payment> = {
+                event: 'payment.created',
+                version: 1,
+                occurred_at: new Date().toISOString(),
+                source: this.cfg.get<string>('APP_NAME') || 'payment-gateway',
+                data: payment,
+            };
+
             void this.queue.add(
                 'webhook',
-                { payment },
+                { envelope },
                 {
                     jobId: `${payment.transaction_id}`,
                 },

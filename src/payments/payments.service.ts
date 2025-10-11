@@ -61,7 +61,7 @@ export class PaymentsService implements OnApplicationBootstrap {
             date: this.replaceDateTodayAndNoTime(payment.date),
         }));
 
-        if (replaceDateTimeNewPayments.length == 0) {
+        if (replaceDateTimeNewPayments.length === 0) {
             return;
         }
 

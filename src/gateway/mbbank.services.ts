@@ -27,7 +27,7 @@ class MBBankService extends GatewayService {
 
     private async login() {
         const browser = await playwright.chromium.launch({
-            headless: true,
+            headless: false,
         });
 
         try {
