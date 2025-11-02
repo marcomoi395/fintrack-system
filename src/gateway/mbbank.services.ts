@@ -72,21 +72,18 @@ class MBBankService extends GatewayService {
                 await route.continue();
             });
 
+            const getCaptchaWaitResponse = page.waitForResponse(
+                '**/retail-web-internetbankingms/getCaptchaImage',
+                { timeout: 60000 },
+            );
             await page.goto('https://online.mbbank.com.vn/pl/login');
-            await page.waitForSelector('img.ng-star-inserted', {
-                state: 'visible',
-                timeout: 10000,
-            });
 
-            const captchaImg = page.locator('img.ng-star-inserted');
-            const captchaSrc = await captchaImg.getAttribute('src');
-            const base64Data = captchaSrc?.replace(/^data:image\/png;base64,/, '');
+            const getCaptchaJson = await getCaptchaWaitResponse.then((d) => d.json());
 
-            if (!base64Data) {
+            if (!getCaptchaJson.imageString) {
                 throw new Error('Không lấy được mã captcha!');
             }
-
-            const captchaText = await this.captchaSolver.solveCaptcha(base64Data);
+            const captchaText = await this.captchaSolver.solveCaptcha(getCaptchaJson.imageString);
 
             await page.locator('#form1').getByRole('img').click();
             await page.getByPlaceholder('Tên đăng nhập').click();

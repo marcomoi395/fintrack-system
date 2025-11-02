@@ -1,5 +1,5 @@
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
-import { Payment } from 'src/shards/interfaces';
+import { Payment } from '../shards/interfaces';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
@@ -19,7 +19,7 @@ export class PaymentsService implements OnApplicationBootstrap {
     }
 
     async onApplicationBootstrap() {
-        if (this.configService.get('DISABLE_SYNC_REDIS') == 'true') {
+        if (this.configService.get('DISABLE_SYNC_REDIS') === 'true') {
             return;
         }
 
@@ -33,16 +33,16 @@ export class PaymentsService implements OnApplicationBootstrap {
     }
 
     isExists(payment: Payment) {
-        return this.payments.some((el) => el.transaction_id == payment.transaction_id);
+        return this.payments.some((el) => el.transaction_id === payment.transaction_id);
     }
 
     replaceDateTodayAndNoTime = (date: Date): Date => {
         const dateMoment: Moment = moment.tz(date, 'Asia/Ho_Chi_Minh');
         const dateNow: Moment = moment().tz('Asia/Ho_Chi_Minh');
         const dateNoTime =
-            dateMoment.get('hour') == 0 &&
-            dateMoment.get('minute') == 0 &&
-            dateMoment.get('second') == 0;
+            dateMoment.get('hour') === 0 &&
+            dateMoment.get('minute') === 0 &&
+            dateMoment.get('second') === 0;
 
         if (dateMoment.isSame(dateNow, 'day') && dateNoTime) {
             return new Date();
@@ -70,13 +70,64 @@ export class PaymentsService implements OnApplicationBootstrap {
 
         this.payments.push(...replaceDateTimeNewPayments);
 
-        // this.payments = this.payments
-        //     .slice(-500) // Keep last 500 payments
-        //     .sort((a, b) => b.date.getTime() - a.date.getTime());
-        // await this.saveRedis();
+        // Save to Redis asynchronously
+        this.payments = this.payments
+            .slice(-500) // Keep last 500 payments
+            .sort((a, b) => b.date.getTime() - a.date.getTime());
+        void this.saveRedis();
     }
 
-    getPayments(): Payment[] {
-        return this.payments;
+    // Modified getPayments to support from/to (ISO -> timestamps), sort and limit
+    getPayments(options?: { from?: number; to?: number; sort?: 'asc' | 'desc'; limit?: number }) {
+        const { from, to, sort, limit } = options || {};
+        let result = [...this.payments];
+
+        const extractTime = (p: Payment): number => {
+            const anyP = p as any;
+            // prefer explicit numeric fields
+            if (typeof anyP.time === 'number') {
+                return anyP.time;
+            }
+            if (typeof anyP.timestamp === 'number') {
+                return anyP.timestamp;
+            }
+            if (typeof anyP.createdAt === 'number') {
+                return anyP.createdAt;
+            }
+
+            // handle Date objects stored in `date`
+            if (anyP.date instanceof Date) {
+                return anyP.date.getTime();
+            }
+            if (typeof anyP.date === 'number') {
+                return anyP.date;
+            }
+            if (typeof anyP.date === 'string') {
+                const parsed = Date.parse(anyP.date);
+                return Number.isNaN(parsed) ? 0 : parsed;
+            }
+
+            return 0;
+        };
+
+        if (typeof from === 'number') {
+            result = result.filter((p) => extractTime(p) >= from);
+        }
+
+        if (typeof to === 'number') {
+            result = result.filter((p) => extractTime(p) <= to);
+        }
+
+        // sort by time (default: descending to return newest first)
+        result.sort((a, b) => extractTime(a) - extractTime(b));
+        if (!sort || sort === 'desc') {
+            result = result.reverse();
+        }
+
+        if (typeof limit === 'number' && limit > 0) {
+            result = result.slice(0, limit);
+        }
+
+        return result;
     }
 }
