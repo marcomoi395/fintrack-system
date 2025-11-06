@@ -97,11 +97,11 @@ class MBBankService extends GatewayService {
             await sleep(1000);
             await page.getByRole('button', { name: 'Đăng nhập' }).click();
 
-            const loginJson: unknown = await loginWaitResponse.then((d) => d.json());
+            const loginJson: any = await loginWaitResponse.then((d) => d.json());
 
-            if (!MBBankService.isLoginResponse(loginJson)) {
-                throw new Error('Unexpected login response shape');
-            }
+            // if (!MBBankService.isLoginResponse(loginJson)) {
+            //     throw new Error('Unexpected login response shape');
+            // }
 
             if (loginJson.result.responseCode === 'GW283') {
                 throw new Error('Wrong captcha');

@@ -1,4 +1,4 @@
-# FinTracke System
+# FinTrack System
 
 Automated system for tracking and retrieving transaction history from MB Bank. This project is forked from [payment-service](https://gitlab.com/nhayhoc/payment-service) and optimized to work exclusively with MB Bank.
 
@@ -78,12 +78,8 @@ services:
             - '1234:1234'
 ```
 
-## License
+### 3.Build & run
 
-This project is released under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-If you find this project helpful, please give it a star!
-
-```
-
+```bash
+docker-compose up -d
 ```
