@@ -1,6 +1,7 @@
 # FinTrack System
 
-Automated system for tracking and retrieving transaction history from MB Bank. This project is forked from [payment-service](https://gitlab.com/nhayhoc/payment-service) and optimized to work exclusively with MB Bank.
+Automated system for tracking and retrieving transaction history from MB Bank. This project is forked
+from [payment-service](https://gitlab.com/nhayhoc/payment-service) and optimized to work exclusively with MB Bank.
 
 ## Security Warning
 
@@ -24,16 +25,7 @@ Automated system for tracking and retrieving transaction history from MB Bank. T
 
 ## Installation
 
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/marcomoi395/fintrack-system.git
-cd fintrack-system
-```
-
-### 2. Create docker-compose file
-
-Create a `docker-compose.yml` file in the project root with the following content:
+Create a `docker-compose.yml` file with the following content:
 
 ```yaml
 volumes:
@@ -41,18 +33,14 @@ volumes:
         driver: local
 services:
     app:
-        build:
-            context: .
-            dockerfile: Dockerfile
-        ports:
-            - ${PORT}:${PORT}
+        image: youngmarco/fintrack-system:latest
         depends_on:
             - redis
             - captcha-resolver
         environment:
             - PORT=3000
             - APP_NAME=
-            - CAPTCHA_API_BASE_URL=http://localhost:1234
+            - CAPTCHA_API_BASE_URL=http://captcha-resolver:1234
             - REDIS_HOST=redis
             - REDIS_PORT=6379
             - DISABLE_SYNC_REDIS=false
@@ -70,12 +58,8 @@ services:
         image: redis:6.2-alpine
         volumes:
             - redis-data:/data
-        ports:
-            - 6379:6379
     captcha-resolver:
         image: registry.gitlab.com/nhayhoc/bank-captcha-server
-        ports:
-            - '1234:1234'
 ```
 
 ### 3.Build & run
