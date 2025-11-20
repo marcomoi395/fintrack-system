@@ -72,7 +72,7 @@ export class PaymentsService implements OnApplicationBootstrap {
 
         // Save to Redis asynchronously
         this.payments = this.payments
-            .slice(-500) // Keep last 500 payments
+            .slice(-100) // Keep last 100 payments
             .sort((a, b) => b.date.getTime() - a.date.getTime());
         void this.saveRedis();
     }
