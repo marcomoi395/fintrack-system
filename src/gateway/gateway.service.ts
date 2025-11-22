@@ -332,8 +332,7 @@ class GatewayService {
                 this.eventEmitter.emit(GATEWAY_CRON_RECOVERY, { name: this.getName() });
             }
 
-            this.isErrored = false;
-            this.errorStreak = 0;
+            this.stopCron();
         } catch (err) {
             this.handleError(err);
         }
